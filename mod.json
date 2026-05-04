@@ -28,6 +28,8 @@
 		]
 	},
 	"incompatibilities": {
-		"ninxout.redash": "*"
+		"id": "ninxout.redash",
+		"version": "*",
+		"importance": "conflicting"
 	}
 }
