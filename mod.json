@@ -28,6 +28,6 @@
 		]
 	},
 	"incompatibilities": {
-		"ninxout.redash": "*"
+		"ninxout.redash": ">=v1.2.0"
 	}
 }
