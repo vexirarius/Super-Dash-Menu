@@ -1,3 +1,6 @@
+# 1.0.3
+- Added a back button to the Play menu, fixed endless scrolling, made level completion work better, and changed scene navigation.
+
 # 1.0.1
 - Made it so that instead of fully deleting menu nodes, it instead makes them invisible. Turns out that's frowned upon.
 
