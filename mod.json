@@ -26,5 +26,8 @@
 			"resources/ActivateSpot.png",
 			"resources/PassedSpot.png"
 		]
+	},
+	"incompatibilities": {
+		"ninxout.redash": "*"
 	}
 }
