@@ -35,7 +35,7 @@ class $modify(MyMenuLayer, MenuLayer) {
 		auto oldMenu = this->getChildByID("main-menu");
 			if (oldMenu) 
 			{
-				oldMenu->removeAllChildren();
+				oldMenu->setVisible(false);
 			}
 				
 		// make the main menu stuff
