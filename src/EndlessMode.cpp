@@ -9,6 +9,8 @@
 #include "CourseWorld.h"
 #include <Geode/modify/EndLevelLayer.hpp>
 #include <Geode/modify/LevelInfoLayer.hpp>
+#include <Geode/modify/PlayLayer.hpp>
+
 
 using namespace geode::prelude;
 
@@ -26,30 +28,26 @@ int stableRandomInt(int seed, int min, int max) {
     std::uniform_int_distribution<int> dist(min, max);
     return dist(rng);
 }
+class $modify(MyPlayLayer, PlayLayer) {
+    void levelComplete() {
+        PlayLayer::levelComplete();
 
-class $modify(MyEndLevelLayer, EndLevelLayer) {
-    void customSetup() {
-        EndLevelLayer::customSetup();
+        if (!m_isPracticeMode) {
+            int current = Mod::get()->getSavedValue<int>("endless-current-index", 0);
+            int completed = Mod::get()->getSavedValue<int>("endless-playing-index", -1);
+            Mod::get()->setSavedValue<bool>("refresh-endless-req", true);
 
-        if (!Mod::get()->getSavedValue<bool>("playing-endless-level", false)) {
-            return;
-        }
-
-        Mod::get()->setSavedValue<bool>("playing-endless-level", false);
-
-        int current = Mod::get()->getSavedValue<int>("endless-current-index", 0);
-        int completed = Mod::get()->getSavedValue<int>("endless-playing-index", -1);
-
-        if (completed == current) {
-            Mod::get()->setSavedValue<int>("endless-current-index", current + 1);
-            log::info("Endless progress advanced to {}", current + 1);
+            if (completed == current) {
+                Mod::get()->setSavedValue<int>("endless-current-index", current + 1);
+                log::info("Endless progress advanced to {}", current + 1);
+            }
         }
     }
 };
 void endlessmodeLayer::onResetSeed(CCObject*) {
     Mod::get()->setSavedValue<int>("endless-seed", randomInt(1, 999999999));
 
-    CCDirector::sharedDirector()->replaceScene(
+    CCDirector::sharedDirector()->pushScene(
         CCTransitionFade::create(0.3f, endlessmodeLayer::scene())
     );
 }
@@ -116,7 +114,7 @@ class $modify(MyGLM, GameLevelManager) {
         if (!level)
             return;
 
-        CCDirector::sharedDirector()->replaceScene(
+        CCDirector::sharedDirector()->pushScene(
             CCTransitionFade::create(
                 0.5f,
                 LevelInfoLayer::scene(level, false)
@@ -206,6 +204,10 @@ void endlessmodeLayer::removeOffScreenStuff(float cameraY) {
 }
 
 void endlessmodeLayer::onLevel(CCObject* sender) {
+
+    if (m_dragging)
+        return;
+
     auto btn = static_cast<CCMenuItemSpriteExtra*>(sender);
     int index = btn->getTag();
 
@@ -221,13 +223,13 @@ void endlessmodeLayer::onLevel(CCObject* sender) {
     requestSpecificLevel(index);
 }
 void endlessmodeLayer::onBack(CCObject*) {
-    CCDirector::sharedDirector()->replaceScene(
+    CCDirector::sharedDirector()->pushScene(
         CCTransitionFade::create(0.5f, MenuLayer::scene(false))
     );
 }
 
 void endlessmodeLayer::keyBackClicked() {
-    CCDirector::sharedDirector()->replaceScene(
+    CCDirector::sharedDirector()->pushScene(
         CCTransitionFade::create(0.5f, courseworldLayer::scene())
     );
 }
@@ -259,6 +261,9 @@ bool endlessmodeLayer::init() {
         {50, 46, 140, 255},
         {3, 84, 111, 255}
     );
+
+    
+    
     gradientBG->setZOrder(-1);
     this->addChild(gradientBG);
 
@@ -278,7 +283,7 @@ bool endlessmodeLayer::init() {
 
     this->setTouchEnabled(true);
     this->setTouchMode(cocos2d::kCCTouchesOneByOne);
-    this->setTouchPriority(0);
+    this->setTouchPriority(-129);
     int seed = Mod::get()->getSavedValue<int>("endless-seed", -1);
 
     if (seed == -1) {
@@ -364,12 +369,20 @@ bool endlessmodeLayer::init() {
     return true;
 }
 
+
+
+
+
+// touch functionality. another gap because im not very good at commenting in code :sob:
+
 bool endlessmodeLayer::ccTouchBegan(CCTouch* touch, CCEvent*) {
     auto pos = touch->getLocation();
 
     if (!m_scrollArea.containsPoint(pos))
         return false;
 
+    m_dragging = false;
+    m_touchStartY = pos.y;
     m_lastTouchY = pos.y;
     return true;
 }
@@ -377,24 +390,51 @@ bool endlessmodeLayer::ccTouchBegan(CCTouch* touch, CCEvent*) {
 void endlessmodeLayer::ccTouchMoved(CCTouch* touch, CCEvent*) {
     auto pos = touch->getLocation();
 
+    if (std::abs(pos.y - m_touchStartY) > 8.f)
+        m_dragging = true;
     float deltaY = pos.y - m_lastTouchY;
     m_lastTouchY = pos.y;
-
     m_scrollY += deltaY;
-
     float maxScroll = std::max(
         0.f,
-        (float)(m_levels.size() - 1) * m_spacing
+        static_cast<float>(m_levels.size() - 1) * m_spacing
     );
-
     m_scrollY = std::clamp(m_scrollY, 0.f, maxScroll);
-
     m_contentLayer->setPositionY(
         m_scrollArea.getMaxY() - 40.f + m_scrollY
     );
-
     removeOffScreenStuff(m_scrollY);
 }
+void endlessmodeLayer::ccTouchEnded(CCTouch* touch, CCEvent*) {
+    if (m_dragging)
+        return;
+
+    auto pos = touch->getLocation();
+
+    if (!m_scrollArea.containsPoint(pos))
+        return;
+    float localY = pos.y - m_contentLayer->getPositionY();
+    int index = static_cast<int>(std::round(-localY / m_spacing));
+    if (index < 0 || index >= static_cast<int>(m_levels.size()))
+        return;
+
+    float itemY = -index * m_spacing;
+
+    if (std::abs(localY - itemY) > 45.f)
+        return;
+    
+    if (index > m_currentIndex) {
+        FLAlertLayer::create(
+            "Locked",
+            "Complete the previous level first!",
+            "OK"
+        )->show();
+        return;
+    }
+
+    requestSpecificLevel(index);
+}
+
 void endlessmodeLayer::onRerollCurrent(CCObject*) {
     int current = Mod::get()->getSavedValue<int>("endless-current-index", 0);
 
@@ -408,7 +448,7 @@ void endlessmodeLayer::onRerollCurrent(CCObject*) {
         randomInt(0, 9)
     );
 
-    CCDirector::sharedDirector()->replaceScene(
+    CCDirector::sharedDirector()->pushScene(
         CCTransitionFade::create(0.3f, endlessmodeLayer::scene())
     );
 }
@@ -427,7 +467,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
         if (Mod::get()->getSavedValue<bool>("playing-endless-level", false)) {
             Mod::get()->setSavedValue<bool>("playing-endless-level", false);
 
-            CCDirector::sharedDirector()->replaceScene(
+            CCDirector::sharedDirector()->pushScene(
                 CCTransitionFade::create(0.5f, endlessmodeLayer::scene())
             );
             return;

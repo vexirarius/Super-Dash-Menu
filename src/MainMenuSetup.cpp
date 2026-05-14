@@ -10,6 +10,7 @@
 #include <Geode/binding/LevelSelectLayer.hpp>
 #include <Geode/binding/SearchButton.hpp>
 #include <Geode/binding/FLAlertLayer.hpp>
+#include <Geode/binding/CCMenuItemSpriteExtra.hpp>
 #include "CourseWorld.h"
 using namespace geode::prelude;
 
@@ -95,6 +96,14 @@ class $modify(MyMenuLayer, MenuLayer) {
 			this,
 			menu_selector(MyMenuLayer::onCourseWorldButton)
 		);
+		    auto backspr = CCSprite::createWithSpriteFrameName("GJ_arrow_01_001.png");
+    			backspr->setScale(0.7f);
+
+		auto backbtn = CCMenuItemSpriteExtra::create(
+			backspr,
+			this,
+			menu_selector(MyMenuLayer::onBackButton)
+		);
 
 
 		m_fields->playButtonMenu->addChild(courseworldbtn);
@@ -136,7 +145,9 @@ class $modify(MyMenuLayer, MenuLayer) {
 		m_fields->playbuttonWrapper->addChild(m_fields->playButtonMenu);
 
 		courseworldbtn->setPosition({0, 0});
+		backbtn->setPosition({-70, 50});
 		m_fields->playButtonMenu->addChild(courseworldbtn);
+		m_fields->playButtonMenu->addChild(backbtn);
 
 		return true;
 	}
@@ -144,7 +155,7 @@ class $modify(MyMenuLayer, MenuLayer) {
 	void onCreateButton(CCObject* sender) 
 	{
 		auto scene = CreatorLayer::scene();
-		CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(0.5f, scene));
+		CCDirector::sharedDirector()->pushScene(CCTransitionFade::create(0.5f, scene));
 	}
 
 	
@@ -165,8 +176,22 @@ class $modify(MyMenuLayer, MenuLayer) {
 	void onCourseWorldButton(CCObject* sender) 
 	{
 		auto scene = courseworldLayer::scene();
-		CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(0.5f, scene));
+		CCDirector::sharedDirector()->pushScene(CCTransitionFade::create(0.5f, scene));
 	}
 	
+	void onBackButton(CCObject* sender) 
+	{
+		m_fields->playbuttonWrapper->setVisible(true);
+		m_fields->playbuttonWrapper->stopAllActions();
+		m_fields->playbuttonWrapper->setScale(0.01f);
+		m_fields->newMenu->setTouchEnabled(true);
+		m_fields->newMenu->runAction(CCFadeIn::create(0.5f));
+		
+		m_fields->playbuttonWrapper->runAction(
+			CCEaseBackOut::create(CCScaleTo::create(0.5f, 0.01f))
+		);
+		m_fields->playbuttonWrapper->setVisible(false);
+		
+	}	
 	
 };

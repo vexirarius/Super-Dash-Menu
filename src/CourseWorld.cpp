@@ -13,22 +13,22 @@
 #include <Geode/binding/LevelSearchLayer.hpp>
 
 void courseworldLayer::onBack(CCObject*) {
-    CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(0.5f, MenuLayer::scene(false)));
+    CCDirector::sharedDirector()->pushScene(CCTransitionFade::create(0.5f, MenuLayer::scene(false)));
 }
 
 void courseworldLayer::onCourses(CCObject*) {
-    CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(0.5f, LevelSearchLayer::scene(0)));
+    CCDirector::sharedDirector()->pushScene(CCTransitionFade::create(0.5f, LevelSearchLayer::scene(0)));
 }
 
 void courseworldLayer::onEndless(CCObject*) {
-    CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(0.5f, endlessmodeLayer::scene()));
+    CCDirector::sharedDirector()->pushScene(CCTransitionFade::create(0.5f, endlessmodeLayer::scene()));
 }
 void courseworldLayer::onLeaderboards(CCObject*) {
-    CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(0.5f, LeaderboardsLayer::scene(LeaderboardType::Top100, LeaderboardStat::Stars)));
+    CCDirector::sharedDirector()->pushScene(CCTransitionFade::create(0.5f, LeaderboardsLayer::scene(LeaderboardType::Top100, LeaderboardStat::Stars)));
 }
 void courseworldLayer::onMainLevels(CCObject*)
 {
-    CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(0.5f, LevelSelectLayer::scene(0)));
+    CCDirector::sharedDirector()->pushScene(CCTransitionFade::create(0.5f, LevelSelectLayer::scene(0)));
 }
 
 courseworldLayer* courseworldLayer::create() {
@@ -52,7 +52,7 @@ CCScene* courseworldLayer::scene() {
     return scene;
 }
 void courseworldLayer::keyBackClicked() {
-    CCDirector::sharedDirector()->replaceScene(
+    CCDirector::sharedDirector()->pushScene(
         CCTransitionFade::create(0.5f, MenuLayer::scene(false))
     );
 }
@@ -157,6 +157,7 @@ bool courseworldLayer::init() {
     label->setPosition({screenSize.width / 2, screenSize.height / 2});
     this->addChild(label);
 
+
     mainButtonsMenu->addChild(coursesBtn);
     mainButtonsMenu->addChild(leaderboardsBtn);
     mainButtonsMenu->addChild(endlessBtn);
@@ -174,7 +175,7 @@ bool courseworldLayer::init() {
 }
 
 void courseworldLayer::onIconKit(CCObject*) {
-    CCDirector::sharedDirector()->replaceScene(
+    CCDirector::sharedDirector()->pushScene(
         CCTransitionFade::create(0.5f, GJGarageLayer::scene())
     );
 }

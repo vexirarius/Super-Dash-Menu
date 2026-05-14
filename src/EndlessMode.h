@@ -32,6 +32,7 @@ public:
     std::unordered_map<int, cocos2d::CCNode*> m_loadedNodes;
 
     float m_spacing = 140.f;
+    bool m_dragging = false;
     int m_buffer = 8;
     int m_currentIndex = 0;
     CCNode* m_contentLayer = nullptr;
@@ -39,9 +40,11 @@ public:
 
     float m_scrollY = 0.f;
     float m_lastTouchY = 0.f;
+    float m_touchStartY = 0.f;
 
     bool ccTouchBegan(CCTouch* touch, CCEvent* event) override;
     void ccTouchMoved(CCTouch* touch, CCEvent* event) override;
+    void ccTouchEnded(CCTouch* touch, CCEvent* event) override;
 
     void requestSpecificLevel(int buttonIndex);
     void onResetSeed(CCObject*);
