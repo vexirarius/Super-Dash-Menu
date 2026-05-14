@@ -5,10 +5,6 @@ This mod changes Geometry Dash's menu to be like Mario Maker 2!
 
 This is probably the closest they'll be to eachother because if I changed Mario Maker's menu to be like Geometry Dash, Nintendo would not be very happy with me, would they?
 
-<<<<<<< HEAD
-Thanks to my friend CasualAnimGD for helping with the coding!
-=======
 Alongside UI modifications, this mod also adds a new challenge to the game - Endless Mode! See how many levels you can complete!
 
 Thanks to my friend CasualAnimGD for helping with the coding!
->>>>>>> cec3156 (Added more stuff, fixed bugs, fixed nitpicks, etc)
